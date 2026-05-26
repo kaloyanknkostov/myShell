@@ -11,8 +11,14 @@ public class Main {
                 exit = true;
             else if (command.startsWith("echo "))
                 System.out.println(command.substring(5));
-            else
-                System.out.println(command + ": command not found");
+            else if (command.startsWith("type ")) {
+                //echo, exit, and type
+                if (command.substring(5).equals("echo")| command.substring(5).equals("type")|command.substring(5).equals("exit"))
+                    System.out.println(command.substring(5)+" is a shell builtin");
+                else System.out.println(command.substring(5)+": not found");
+
+            }
+            else System.out.println(command + ": command not found");
         }
     }
 }

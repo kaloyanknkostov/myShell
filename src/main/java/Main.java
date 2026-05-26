@@ -11,9 +11,9 @@ public class Main {
             System.out.print("$ ");
             String input = scanner.nextLine();
 
-            String words[] = input.split(" ");
+            String[] words = input.split(" ");
             String command = words[0];
-            String rest[] = Arrays.copyOfRange(words, 1, words.length);
+            String[] rest = Arrays.copyOfRange(words, 1, words.length);
             String result = String.join(" ", rest);
 
 
@@ -21,12 +21,13 @@ public class Main {
                 exit = true;
             else if (Objects.equals(command,"echo"))
                 System.out.println(result);
-            else if (Objects.equals(command,"type")) {
-
+            else if (Objects.equals(command,"type"))
                 System.out.println(type(result));
-
+            else if(getExecutable(command)!=null){
+                Process process = Runtime.getRuntime().exec(input.split(" "));
+                process.getInputStream().transferTo(System.out);
             }
-            //maybe error
+
             else System.out.println(input+ ": command not found");
         }
         scanner.close();
@@ -48,5 +49,17 @@ public class Main {
            }
        }
        return command+": not found";
+    }
+
+    public static String getExecutable(String command){
+        String path_commands = System.getenv("PATH");
+        String[] path_command = path_commands.split(":");
+        for(String path:path_command) {
+            File file = new File(path, command);
+            if (file.exists() && file.canExecute()) {
+                return file.getAbsolutePath();
+            }
+        }
+        return null;
     }
 }

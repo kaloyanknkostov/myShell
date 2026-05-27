@@ -1,6 +1,7 @@
 import java.io.File;
 import java.util.Arrays;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Scanner;
 
 public class Main {
@@ -23,11 +24,10 @@ public class Main {
                 System.out.println(result);
             else if (Objects.equals(command,"type"))
                 System.out.println(type(result));
-            else if(getExecutable(command)!=null){
+            else if(getFile(System.getenv("PATH").split(":"),command).isPresent()){
                 Process process = Runtime.getRuntime().exec(input.split(" "));
                 process.getInputStream().transferTo(System.out);
             }
-
             else System.out.println(input+ ": command not found");
         }
         scanner.close();
@@ -36,30 +36,22 @@ public class Main {
 
     public static String type(String command){
        String[] commands = {"exit","echo","type"};
-       String path_commands = System.getenv("PATH");
-       String[] path_command = path_commands.split(":");
        for(String text:commands){
             if(Objects.equals(text,command))
                 return command+" is a shell builtin";
        }
-       for(String path:path_command) {
-           File file = new File(path, command);
-           if (file.exists() && file.canExecute()) {
-               return command + " is " + file.getAbsolutePath();
-           }
-       }
-       return command+": not found";
+       return getFile(System.getenv("PATH").split(":"), command)
+            .map(f -> command + " is " + f.getAbsolutePath())
+            .orElse(command + ": not found");
     }
 
-    public static String getExecutable(String command){
-        String path_commands = System.getenv("PATH");
-        String[] path_command = path_commands.split(":");
+    public static Optional<File> getFile(String[] path_command, String command){
         for(String path:path_command) {
             File file = new File(path, command);
             if (file.exists() && file.canExecute()) {
-                return file.getAbsolutePath();
+                return Optional.of(file);
             }
         }
-        return null;
+        return Optional.empty();
     }
 }

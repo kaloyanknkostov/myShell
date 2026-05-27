@@ -18,24 +18,27 @@ public class Main {
             String result = String.join(" ", rest);
 
 
-            if (Objects.equals(command,"exit"))
-                exit = true;
-            else if (Objects.equals(command,"echo"))
-                System.out.println(result);
-            else if (Objects.equals(command,"type"))
-                System.out.println(type(result));
-            else if(getFile(System.getenv("PATH").split(":"),command).isPresent()){
-                Process process = Runtime.getRuntime().exec(input.split(" "));
-                process.getInputStream().transferTo(System.out);
+            switch (command) {
+                case "exit" -> exit = true;
+                case "echo" -> System.out.println(result);
+                case "type" -> System.out.println(type(result));
+                case "pwd" -> System.out.println(System.getProperty("user.dir"));
+                default -> {
+                    if (getFile(System.getenv("PATH").split(":"), command).isPresent()) {
+                        Process process = Runtime.getRuntime().exec(input.split(" "));
+                        process.getInputStream().transferTo(System.out);
+                    } else {
+                        System.out.println(input + ": command not found");
+                    }
+                }
             }
-            else System.out.println(input+ ": command not found");
         }
         scanner.close();
     }
 
 
     public static String type(String command){
-       String[] commands = {"exit","echo","type"};
+       String[] commands = {"exit","echo","type","pwd"};
        for(String text:commands){
             if(Objects.equals(text,command))
                 return command+" is a shell builtin";

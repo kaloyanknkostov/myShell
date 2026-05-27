@@ -23,6 +23,7 @@ public class Main {
                 case "echo" -> System.out.println(result);
                 case "type" -> System.out.println(type(result));
                 case "pwd" -> System.out.println(System.getProperty("user.dir"));
+                case "cd" -> cd(words[1]);
                 default -> {
                     if (getFile(System.getenv("PATH").split(":"), command).isPresent()) {
                         Process process = Runtime.getRuntime().exec(input.split(" "));
@@ -35,10 +36,16 @@ public class Main {
         }
         scanner.close();
     }
+    public static void cd(String directory){
+        File target = new File(directory);
+        if (target.isDirectory())
+            System.setProperty("user.dir", target.getPath());
+        else System.out.println("cd: "+ directory+": No such file or directory");
 
+    }
 
     public static String type(String command){
-       String[] commands = {"exit","echo","type","pwd"};
+       String[] commands = {"exit","echo","type","pwd","cd"};
        for(String text:commands){
             if(Objects.equals(text,command))
                 return command+" is a shell builtin";

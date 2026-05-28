@@ -40,7 +40,10 @@ public class Main {
         scanner.close();
     }
     public static void cd(String directory) throws java.io.IOException {
-        File target = new File(currentDir, directory);
+        File target = new File(directory);
+        if (!target.isAbsolute()) {
+            target = new File(currentDir, directory);
+        }
         if (target.isDirectory()) {
             currentDir = target.getCanonicalPath();
         } else {

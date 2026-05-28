@@ -12,19 +12,19 @@ public class Main {
             System.out.print("$ ");
             String input = scanner.nextLine();
 
-            String[] words = input.split(" ");
-            String command = words[0];
-            String[] rest = Arrays.copyOfRange(words, 1, words.length);
-            String result = String.join(" ", rest);
+            ArrayList<String> words= parseInput(input);
+            System.out.println("List lenght is "+words.size());
 
-
+            String command = words.getFirst();
+            words.removeFirst();
+            words.removeFirst();
             switch (command) {
                 case "exit" -> exit = true;
-                case "echo" -> System.out.println(result);
-                case "type" -> System.out.println(type(result));
+                case "echo" -> System.out.println(words);
+                case "type" -> System.out.println(type(words.getFirst()));
                 case "pwd" -> System.out.println(currentDir);
                 // TODO error if only cd
-                case "cd" -> cd(words[1]);
+                case "cd" -> cd(words.getFirst());
                 default -> {
                     if (getFile(System.getenv("PATH").split(":"), command).isPresent()) {
                         Process process = new ProcessBuilder(input.split(" "))
@@ -53,6 +53,43 @@ public class Main {
         } else {
             System.out.println("cd: " + directory + ": No such file or directory");
         }
+    }
+
+    /*
+     mode 0 ->  default no quotes removes extra space
+     mode 1 ->  single quotes mode keep all spaces
+     */
+    public static ArrayList<String> parseInput(String input){
+        StringBuilder token = new StringBuilder();
+        ArrayList<String> output= new ArrayList<>();
+        int mode = 0;
+        for(char character:input.toCharArray()){
+           if (character == ' ') {
+               if (mode == 0 && !token.isEmpty()){
+                   output.add(token.toString());
+                   output.add(" ");
+                   token.setLength(0);
+               }
+               else if (mode == 1){
+                   if (token.isEmpty())
+                       output.add(" ");
+                   else {
+                       output.add(token.toString());
+                       output.add(" ");
+                       token.setLength(0);
+                   }
+               }
+           } else if (character == '\'') {
+               if (mode == 0)
+                   mode = 1;
+               else mode = 0;
+           }
+           else token.append(character);
+        }
+        if (!token.isEmpty())
+            output.add(token.toString());
+
+        return output;
     }
 
     public static String type(String command){

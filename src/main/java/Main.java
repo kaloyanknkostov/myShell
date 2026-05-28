@@ -11,24 +11,24 @@ public class Main {
         while (!exit) {
             System.out.print("$ ");
             String input = scanner.nextLine();
-            ArrayList<String> words= parseInput(input);
+            ArrayList<String> words = parseInput(input);
             if (words.isEmpty()) {
                 continue;
-                }
-            String command = words.removeFirst();
-            if (!words.isEmpty() && words.getFirst().equals(" ")) {
-                words.removeFirst();
             }
+            String command = words.removeFirst();
             switch (command) {
                 case "exit" -> exit = true;
-                case "echo" -> System.out.println(stringPrinter(words));
+                case "echo" -> System.out.println(String.join(" ", words));
                 case "type" -> System.out.println(type(words.getFirst()));
                 case "pwd" -> System.out.println(currentDir);
                 // TODO error if only cd
                 case "cd" -> cd(words.getFirst());
                 default -> {
                     if (getFile(System.getenv("PATH").split(":"), command).isPresent()) {
-                        Process process = new ProcessBuilder(input.split(" "))
+                        ArrayList<String> fullCommand = new ArrayList<>();
+                        fullCommand.add(command);
+                        fullCommand.addAll(words);
+                        Process process = new ProcessBuilder(fullCommand)
                                 .directory(new File(currentDir))
                                 .start();
                         process.getInputStream().transferTo(System.out);
@@ -57,46 +57,35 @@ public class Main {
     }
 
     /*
-     mode 0 ->  default no quotes removes extra space
-     mode 1 ->  single quotes mode keep all spaces
+     mode 0 -> default: split on spaces
+     mode 1 -> single quotes: keep all characters (including spaces) literal
      */
-    public static ArrayList<String> parseInput(String input){
+    public static ArrayList<String> parseInput(String input) {
         StringBuilder token = new StringBuilder();
-        ArrayList<String> output= new ArrayList<>();
+        ArrayList<String> output = new ArrayList<>();
         int mode = 0;
-        for(char character:input.toCharArray()){
-           if (character == ' ') {
-               if (mode == 0 && !token.isEmpty()){
-                   output.add(token.toString());
-                   output.add(" ");
-                   token.setLength(0);
-               }
-               else if (mode == 1){
-                   if (token.isEmpty())
-                       output.add(" ");
-                   else {
-                       output.add(token.toString());
-                       output.add(" ");
-                       token.setLength(0);
-                   }
-               }
-           } else if (character == '\'') {
-               if (mode == 0)
-                   mode = 1;
-               else mode = 0;
-           }
-           else token.append(character);
+        for (char character : input.toCharArray()) {
+            if (character == ' ') {
+                if (mode == 0 && !token.isEmpty()) {
+                    output.add(token.toString());
+                    token.setLength(0);
+                } else if (mode == 1) {
+                    token.append(character);
+                }
+            } else if (character == '\'') {
+                if (mode == 0) {
+                    mode = 1;
+                } else {
+                    mode = 0;
+                }
+            } else {
+                token.append(character);
+            }
         }
-        if (!token.isEmpty())
+        if (!token.isEmpty()) {
             output.add(token.toString());
-
+        }
         return output;
-    }
-    public static String stringPrinter(ArrayList<String> input){
-        var output = new StringBuilder();
-        for(String word:input)
-            output.append(word);
-        return output.toString();
     }
 
     public static String type(String command){

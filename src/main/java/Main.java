@@ -40,7 +40,11 @@ public class Main {
         scanner.close();
     }
     public static void cd(String directory) throws java.io.IOException {
-        File target = new File(directory);
+        File target;
+        if (directory.startsWith("~"))
+            target= new File(System.getenv("HOME"));
+        else
+            target = new File(directory);
         if (!target.isAbsolute()) {
             target = new File(currentDir, directory);
         }

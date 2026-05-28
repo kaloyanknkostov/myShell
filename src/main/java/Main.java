@@ -11,16 +11,17 @@ public class Main {
         while (!exit) {
             System.out.print("$ ");
             String input = scanner.nextLine();
-
             ArrayList<String> words= parseInput(input);
-            System.out.println("List lenght is "+words.size());
-
-            String command = words.getFirst();
-            words.removeFirst();
-            words.removeFirst();
+            if (words.isEmpty()) {
+                continue;
+                }
+            String command = words.removeFirst();
+            if (!words.isEmpty() && words.getFirst().equals(" ")) {
+                words.removeFirst();
+            }
             switch (command) {
                 case "exit" -> exit = true;
-                case "echo" -> System.out.println(words);
+                case "echo" -> System.out.println(stringPrinter(words));
                 case "type" -> System.out.println(type(words.getFirst()));
                 case "pwd" -> System.out.println(currentDir);
                 // TODO error if only cd
@@ -90,6 +91,12 @@ public class Main {
             output.add(token.toString());
 
         return output;
+    }
+    public static String stringPrinter(ArrayList<String> input){
+        var output = new StringBuilder();
+        for(String word:input)
+            output.append(word);
+        return output.toString();
     }
 
     public static String type(String command){

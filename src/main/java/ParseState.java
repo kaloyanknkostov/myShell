@@ -48,5 +48,8 @@ public class ParseState {
         else state.sb.append(character);
     }
 
-    public static void handleDouble(ParseState state, char character) {}
+    public static void handleDouble(ParseState state, char character) {
+        if (character == '\"') state.mode = Mode.NONE;
+        else state.sb.append(character);
+    }
 }

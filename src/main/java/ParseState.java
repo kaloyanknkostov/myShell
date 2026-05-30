@@ -63,7 +63,7 @@ public class ParseState {
             return;
         }
         if (character == '\"') state.mode = Mode.NONE;
-        if (character == '\\') state.escape = true;
+        else if (character == '\\') state.escape = true;
         else state.sb.append(character);
     }
 }

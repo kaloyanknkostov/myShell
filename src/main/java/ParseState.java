@@ -57,8 +57,13 @@ public class ParseState {
     }
 
     public static void handleDouble(ParseState state, char character) {
-        if (character == '\"' && !state.escape) state.mode = Mode.NONE;
-        if (character == '\\' && !state.escape) state.escape = true;
+        if (state.escape) {
+            state.sb.append(character);
+            state.escape = false;
+            return;
+        }
+        if (character == '\"') state.mode = Mode.NONE;
+        if (character == '\\') state.escape = true;
         else state.sb.append(character);
     }
 }

@@ -11,6 +11,7 @@ public class ParseState {
     ArrayList<String> tokens = new ArrayList<>();
     StringBuilder sb = new StringBuilder();
     Mode mode = Mode.NONE;
+    boolean escape = false;
 
     public static ArrayList<String> parseInput(String input) {
         ParseState state = new ParseState();
@@ -34,12 +35,14 @@ public class ParseState {
     }
 
     public static void handleNone(ParseState state, char character) {
-        if (character == '\'') {
+        if (character == '\'' && !state.escape) {
             state.mode = Mode.SINGLE;
-        } else if (character == '\"') {
+        } else if (character == '\"' && !state.escape) {
             state.mode = Mode.DOUBLE;
-        } else if (character == ' ') {
+        } else if (character == ' ' && !state.escape) {
             if (!state.sb.isEmpty()) flushToken(state);
+        } else if (character == '\\') {
+            state.escape = true;
         } else state.sb.append(character);
     }
 

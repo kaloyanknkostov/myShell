@@ -43,7 +43,10 @@ public class ParseState {
             if (!state.sb.isEmpty()) flushToken(state);
         } else if (character == '\\' && !state.escape) {
             state.escape = true;
-        } else state.sb.append(character);
+        } else {
+            state.sb.append(character);
+            state.escape = false;
+        }
     }
 
     public static void handleSingle(ParseState state, char character) {

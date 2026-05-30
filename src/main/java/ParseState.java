@@ -41,7 +41,7 @@ public class ParseState {
             state.mode = Mode.DOUBLE;
         } else if (character == ' ' && !state.escape) {
             if (!state.sb.isEmpty()) flushToken(state);
-        } else if (character == '\\') {
+        } else if (character == '\\' && !state.escape) {
             state.escape = true;
         } else state.sb.append(character);
     }

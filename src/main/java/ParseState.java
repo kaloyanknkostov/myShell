@@ -35,17 +35,19 @@ public class ParseState {
     }
 
     public static void handleNone(ParseState state, char character) {
-        if (character == '\'' && !state.escape) {
-            state.mode = Mode.SINGLE;
-        } else if (character == '\"' && !state.escape) {
-            state.mode = Mode.DOUBLE;
-        } else if (character == ' ' && !state.escape) {
-            if (!state.sb.isEmpty()) flushToken(state);
-        } else if (character == '\\' && !state.escape) {
-            state.escape = true;
-        } else {
+        if (state.escape) {
             state.sb.append(character);
             state.escape = false;
+            return;
+        }
+        switch (character) {
+            case '\'' -> state.mode = Mode.SINGLE;
+            case '\"' -> state.mode = Mode.DOUBLE;
+            case ' ' -> {
+                if (!state.sb.isEmpty()) flushToken(state);
+            }
+            case '\\' -> state.escape = true;
+            default -> state.sb.append(character);
         }
     }
 
@@ -55,7 +57,8 @@ public class ParseState {
     }
 
     public static void handleDouble(ParseState state, char character) {
-        if (character == '\"') state.mode = Mode.NONE;
+        if (character == '\"' && !state.escape) state.mode = Mode.NONE;
+        if (character == '\\' && !state.escape) state.escape = true;
         else state.sb.append(character);
     }
 }

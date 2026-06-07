@@ -8,15 +8,18 @@ public class CommandContext implements AutoCloseable {
     private final PrintStream stdout;
     private final PrintStream stderr;
     private final InputStream stdin;
+    private String currentDirectory;
 
     public CommandContext(
         PrintStream stdout,
         PrintStream stderr,
-        InputStream stdin
+        InputStream stdin,
+        String currentDirectory
     ) {
         this.stdout = stdout;
         this.stderr = stderr;
         this.stdin = stdin;
+        this.currentDirectory = currentDirectory;
     }
 
     public PrintStream getStdout() {
@@ -29,6 +32,14 @@ public class CommandContext implements AutoCloseable {
 
     public InputStream getStdin() {
         return stdin;
+    }
+
+    public String getCurrentDirectory() {
+        return currentDirectory;
+    }
+
+    public void setCurrentDirectory(String currentDirectory) {
+        this.currentDirectory = currentDirectory;
     }
 
     @Override

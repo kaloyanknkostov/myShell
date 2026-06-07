@@ -14,9 +14,10 @@ public class Shell {
         currentDir = System.getProperty("user.dir");
         builtinCommands = Set.of("echo", "type", "exit", "pwd", "cd");
         COMMANDS.put("echo", new EchoCommand());
-        COMMANDS.put("exit", new ExitCommand());
-        //COMMANDS.put("exit", new PwdCommand(currentDir));
         COMMANDS.put("type", new TypeCommand(builtinCommands));
+        COMMANDS.put("exit", new ExitCommand());
+        COMMANDS.put("pwd", new PwdCommand());
+        COMMANDS.put("cd", new CdCommand());
     }
 
     public void runs() throws Exception {
@@ -25,16 +26,16 @@ public class Shell {
                 System.out.print("$ ");
                 var input = scanner.nextLine();
                 var words = ParseState.parseInput(input);
-                if (words.isEmpty()) {
-                    continue;
-                }
-                var context = buildContext(words);
-                Command command = COMMANDS.get(words.removeFirst());
+                if (words.isEmpty()) continue;
 
-                if (command != null) {
+                try (var context = buildContext(words)) {
+                    var commandStr = words.removeFirst();
+                    Command command = COMMANDS.get(commandStr);
+                    if (command == null) {
+                        command = new ExternalCommand(commandStr);
+                    }
                     command.execute(words, context);
-                } else {
-                    System.out.println("oops");
+                    this.currentDir = context.getCurrentDirectory();
                 }
             }
         }
@@ -56,30 +57,17 @@ public class Shell {
         CommandContext context = new CommandContext(
             stdout,
             System.err,
-            System.in
+            System.in,
+            this.currentDir
         );
         return context;
     }
 
-    /*
-    default -> {
-                        if (
-                            getFile(
-                                System.getenv("PATH").split(":"),
-                                command
-                            ).isPresent()
-                        ) {
-                            ArrayList<String> fullCommand = new ArrayList<>();
-                            fullCommand.add(command);
-                            fullCommand.addAll(words);
-                            Process process = new ProcessBuilder(fullCommand)
-                                .directory(new File(currentDir))
-                                .start();
-                            process.getInputStream().transferTo(System.out);
-                        } else {
-                            System.out.println(input + ": command not found");
-                        }
-                    }
-                }
-    */
+    public String getCurrentDir() {
+        return currentDir;
+    }
+
+    public void setCurrentDir(String currentDir) {
+        this.currentDir = currentDir;
+    }
 }

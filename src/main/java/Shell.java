@@ -46,6 +46,9 @@ public class Shell {
         PrintStream stdout = System.out;
         int index = words.indexOf(">");
         if (index != -1) {
+            index = words.indexOf("1>");
+        }
+        if (index != -1) {
             String fileString = words.remove(index + 1);
             var file = new File(fileString);
             if (!file.isAbsolute()) {

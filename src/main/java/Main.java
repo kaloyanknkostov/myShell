@@ -4,8 +4,6 @@ public class Main {
         Shell shell = new Shell();
         try {
             shell.runs();
-        } catch (Exception e) {
-            System.out.println("Big P");
-        }
+        } catch (Exception e) {}
     }
 }

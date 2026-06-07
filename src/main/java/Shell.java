@@ -45,7 +45,7 @@ public class Shell {
         throws FileNotFoundException {
         PrintStream stdout = System.out;
         int index = words.indexOf(">");
-        if (index != -1) {
+        if (index == -1) {
             index = words.indexOf("1>");
         }
         if (index != -1) {

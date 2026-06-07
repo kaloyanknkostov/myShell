@@ -3,7 +3,7 @@ package commands;
 import java.io.InputStream;
 import java.io.PrintStream;
 
-public class CommandContext {
+public class CommandContext implements AutoCloseable {
 
     private final PrintStream stdout;
     private final PrintStream stderr;
@@ -29,5 +29,22 @@ public class CommandContext {
 
     public InputStream getStdin() {
         return stdin;
+    }
+
+    @Override
+    public void close() throws Exception {
+        if (stdout != System.out) {
+            stdout.close();
+        }
+        if (stderr != System.err) {
+            stderr.close();
+        }
+        if (stdin != System.in) {
+            try {
+                stdin.close();
+            } catch (java.io.IOException e) {
+                // Log or ignore the exception
+            }
+        }
     }
 }

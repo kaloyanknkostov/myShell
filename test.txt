@@ -1,1 +1,1 @@
-testing the program
+cd is an alias for z

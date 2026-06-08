@@ -44,6 +44,7 @@ public class Shell {
     private CommandContext buildContext(ArrayList<String> words)
         throws FileNotFoundException {
         PrintStream stdout = System.out;
+        PrintStream stderr = System.err;
         int index = words.indexOf(">");
         if (index == -1) {
             index = words.indexOf("1>");
@@ -57,9 +58,19 @@ public class Shell {
             stdout = new PrintStream(file);
             words.remove(index);
         }
+        index = words.indexOf("2>");
+        if (index != -1) {
+            String fileString = words.remove(index + 1);
+            var file = new File(fileString);
+            if (!file.isAbsolute()) {
+                file = new File(this.currentDir, fileString);
+            }
+            stderr = new PrintStream(file);
+            words.remove(index);
+        }
         CommandContext context = new CommandContext(
             stdout,
-            System.err,
+            stderr,
             System.in,
             this.currentDir
         );

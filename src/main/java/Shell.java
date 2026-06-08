@@ -1,6 +1,7 @@
 import commands.*;
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.PrintStream;
 import java.util.*;
 
@@ -45,27 +46,33 @@ public class Shell {
         throws FileNotFoundException {
         PrintStream stdout = System.out;
         PrintStream stderr = System.err;
-        int index = words.indexOf(">");
-        if (index == -1) {
-            index = words.indexOf("1>");
-        }
-        if (index != -1) {
+        var lists = List.of(">", "1>", "2>", ">>", "1>>", "2>>");
+        String operator = words
+            .stream()
+            .filter(word -> lists.contains(word))
+            .findFirst()
+            .orElse(null);
+
+        if (operator != null) {
+            int index = words.indexOf(operator);
             String fileString = words.remove(index + 1);
-            var file = new File(fileString);
-            if (!file.isAbsolute()) {
-                file = new File(this.currentDir, fileString);
+            File file = Optional.of(new File(fileString))
+                .filter(File::isAbsolute)
+                .orElseGet(() -> new File(this.currentDir, fileString));
+            switch (operator) {
+                case ">", "1>" -> {
+                    stdout = new PrintStream(new FileOutputStream(file, false));
+                }
+                case ">>", "1>>" -> {
+                    stdout = new PrintStream(new FileOutputStream(file, true));
+                }
+                case "2>" -> {
+                    stderr = new PrintStream(new FileOutputStream(file, false));
+                }
+                case "2>>" -> {
+                    stderr = new PrintStream(new FileOutputStream(file, true));
+                }
             }
-            stdout = new PrintStream(file);
-            words.remove(index);
-        }
-        index = words.indexOf("2>");
-        if (index != -1) {
-            String fileString = words.remove(index + 1);
-            var file = new File(fileString);
-            if (!file.isAbsolute()) {
-                file = new File(this.currentDir, fileString);
-            }
-            stderr = new PrintStream(file);
             words.remove(index);
         }
         CommandContext context = new CommandContext(

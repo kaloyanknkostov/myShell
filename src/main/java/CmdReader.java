@@ -17,6 +17,7 @@ public class CmdReader {
     public String readLine() {
         String originalConfig = null;
         buffer.setLength(0);
+        cursorIndex = 0;
         try {
             originalConfig = runStty("-g");
             runStty("raw -echo");
@@ -132,10 +133,24 @@ public class CmdReader {
         }
     }
 
-    private String runStty(String args)
+    private String runSttybak(String args)
         throws IOException, InterruptedException {
         Process cmd = new ProcessBuilder("/bin/sh", "-c", "stty " + args)
             .redirectInput(ProcessBuilder.Redirect.INHERIT)
+            .start();
+        cmd.waitFor();
+        return new String(cmd.getInputStream().readAllBytes()).trim();
+    }
+
+    private String runStty(String args)
+        throws IOException, InterruptedException {
+        // Split the arguments (e.g. "raw -echo" becomes ["raw", "-echo"])
+        List<String> command = new ArrayList<>();
+        command.add("stty");
+        command.addAll(List.of(args.split(" ")));
+
+        Process cmd = new ProcessBuilder(command)
+            .redirectInput(ProcessBuilder.Redirect.INHERIT) // Inherit parent TTY stdin
             .start();
         cmd.waitFor();
         return new String(cmd.getInputStream().readAllBytes()).trim();

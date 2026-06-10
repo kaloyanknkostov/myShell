@@ -155,10 +155,10 @@ public class CmdReader {
         int exitCode = cmd.waitFor();
         String output = new String(cmd.getInputStream().readAllBytes()).trim();
 
-        // Debug print if the command failed
+        // Print to System.err so it shows up in the test logs
         if (exitCode != 0) {
             System.err.println(
-                "stty " + args + " failed with exit code:" + exitCode
+                "DEBUG stty " + args + " failed with exit code: " + exitCode
             );
         }
 

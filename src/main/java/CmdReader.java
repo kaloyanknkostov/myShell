@@ -134,11 +134,7 @@ public class CmdReader {
 
     private String runStty(String args)
         throws IOException, InterruptedException {
-        Process cmd = new ProcessBuilder(
-            "/bin/sh",
-            "-c",
-            "stty " + args + " < /dev/tty"
-        )
+        Process cmd = new ProcessBuilder("/bin/sh", "-c", "stty " + args)
             .redirectInput(ProcessBuilder.Redirect.INHERIT)
             .start();
         cmd.waitFor();

@@ -135,7 +135,7 @@ public class CmdReader {
         }
     }
 
-    private String runStty(String args)
+    private String runSttybak(String args)
         throws IOException, InterruptedException {
         String[] sttyArgs = args.split(" ");
         String[] command = new String[sttyArgs.length + 1];
@@ -151,6 +151,15 @@ public class CmdReader {
             ).trim();
             throw new IOException("stty failed: " + error);
         }
+        return new String(cmd.getInputStream().readAllBytes()).trim();
+    }
+
+    private String runStty(String args)
+        throws IOException, InterruptedException {
+        Process cmd = new ProcessBuilder("/bin/sh", "-c", "stty " + args)
+            .redirectInput(ProcessBuilder.Redirect.INHERIT)
+            .start();
+        cmd.waitFor();
         return new String(cmd.getInputStream().readAllBytes()).trim();
     }
 }

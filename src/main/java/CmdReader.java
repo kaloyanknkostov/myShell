@@ -133,35 +133,12 @@ public class CmdReader {
         }
     }
 
-    private String runSttybak(String args)
+    private String runStty(String args)
         throws IOException, InterruptedException {
         Process cmd = new ProcessBuilder("/bin/sh", "-c", "stty " + args)
             .redirectInput(ProcessBuilder.Redirect.INHERIT)
             .start();
         cmd.waitFor();
         return new String(cmd.getInputStream().readAllBytes()).trim();
-    }
-
-    private String runStty(String args)
-        throws IOException, InterruptedException {
-        List<String> command = new ArrayList<>();
-        command.add("stty");
-        command.addAll(List.of(args.split(" ")));
-
-        Process cmd = new ProcessBuilder(command)
-            .redirectInput(ProcessBuilder.Redirect.INHERIT)
-            .start();
-
-        int exitCode = cmd.waitFor();
-        String output = new String(cmd.getInputStream().readAllBytes()).trim();
-
-        // Print to System.err so it shows up in the test logs
-        if (exitCode != 0) {
-            System.err.println(
-                "DEBUG stty " + args + " failed with exit code: " + exitCode
-            );
-        }
-
-        return output;
     }
 }

@@ -24,7 +24,6 @@ public class Shell {
     public void runs() throws Exception {
         try (Scanner scanner = new Scanner(System.in)) {
             while (true) {
-                System.out.print("$ ");
                 var cmdReader = new CmdReader(builtinCommands);
                 var input = cmdReader.readLine();
                 var words = ParseState.parseInput(input);

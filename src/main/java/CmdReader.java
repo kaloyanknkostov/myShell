@@ -21,6 +21,7 @@ public class CmdReader {
         try {
             originalConfig = runStty("-g");
             runStty("raw -echo");
+            System.out.print("$ ");
             System.out.flush();
             var in = System.in;
             int key;

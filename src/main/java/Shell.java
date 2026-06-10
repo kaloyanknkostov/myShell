@@ -45,6 +45,7 @@ public class Shell {
 
     private CommandContext buildContext(ArrayList<String> words)
         throws FileNotFoundException {
+        System.err.println("DEBUG WORDS BEFORE: " + words);
         PrintStream stdout = System.out;
         PrintStream stderr = System.err;
         var lists = List.of(">", "1>", "2>", ">>", "1>>", "2>>");
@@ -53,6 +54,8 @@ public class Shell {
             .filter(word -> lists.contains(word))
             .findFirst()
             .orElse(null);
+
+        System.err.println("DEBUG OPERATOR: " + operator);
 
         if (operator != null) {
             int index = words.indexOf(operator);
@@ -75,6 +78,7 @@ public class Shell {
                 }
             }
             words.remove(index);
+            System.err.println("DEBUG WORDS AFTER: " + words);
         }
         CommandContext context = new CommandContext(
             stdout,

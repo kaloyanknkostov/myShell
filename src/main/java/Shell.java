@@ -25,7 +25,8 @@ public class Shell {
         try (Scanner scanner = new Scanner(System.in)) {
             while (true) {
                 System.out.print("$ ");
-                var input = scanner.nextLine();
+                var cmdReader = new CmdReader(builtinCommands);
+                var input = cmdReader.readLine();
                 var words = ParseState.parseInput(input);
                 if (words.isEmpty()) continue;
 

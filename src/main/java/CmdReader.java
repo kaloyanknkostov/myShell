@@ -1,7 +1,6 @@
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Set;
 
 public class CmdReader {
@@ -18,9 +17,11 @@ public class CmdReader {
         String originalConfig = null;
         buffer.setLength(0);
         cursorIndex = 0;
+
         try {
             originalConfig = runStty("-g");
             runStty("raw -echo");
+            System.out.flush();
             var in = System.in;
             int key;
             while ((key = in.read()) != -1) {
@@ -135,10 +136,20 @@ public class CmdReader {
 
     private String runStty(String args)
         throws IOException, InterruptedException {
-        Process cmd = new ProcessBuilder("/bin/sh", "-c", "stty " + args)
-            .redirectInput(ProcessBuilder.Redirect.INHERIT)
+        String[] sttyArgs = args.split(" ");
+        String[] command = new String[sttyArgs.length + 1];
+        command[0] = "stty";
+        System.arraycopy(sttyArgs, 0, command, 1, sttyArgs.length);
+        Process cmd = new ProcessBuilder(command)
+            .redirectInput(new File("/dev/tty"))
             .start();
-        cmd.waitFor();
+        int exitCode = cmd.waitFor();
+        if (exitCode != 0) {
+            String error = new String(
+                cmd.getErrorStream().readAllBytes()
+            ).trim();
+            throw new IOException("stty failed: " + error);
+        }
         return new String(cmd.getInputStream().readAllBytes()).trim();
     }
 }

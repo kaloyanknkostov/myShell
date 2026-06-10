@@ -144,15 +144,24 @@ public class CmdReader {
 
     private String runStty(String args)
         throws IOException, InterruptedException {
-        // Split the arguments (e.g. "raw -echo" becomes ["raw", "-echo"])
         List<String> command = new ArrayList<>();
         command.add("stty");
         command.addAll(List.of(args.split(" ")));
 
         Process cmd = new ProcessBuilder(command)
-            .redirectInput(ProcessBuilder.Redirect.INHERIT) // Inherit parent TTY stdin
+            .redirectInput(ProcessBuilder.Redirect.INHERIT)
             .start();
-        cmd.waitFor();
-        return new String(cmd.getInputStream().readAllBytes()).trim();
+
+        int exitCode = cmd.waitFor();
+        String output = new String(cmd.getInputStream().readAllBytes()).trim();
+
+        // Debug print if the command failed
+        if (exitCode != 0) {
+            System.err.println(
+                "stty " + args + " failed with exit code:" + exitCode
+            );
+        }
+
+        return output;
     }
 }

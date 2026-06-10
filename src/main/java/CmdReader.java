@@ -138,7 +138,9 @@ public class CmdReader {
             "/bin/sh",
             "-c",
             "stty " + args + " < /dev/tty"
-        ).start();
+        )
+            .redirectInput(ProcessBuilder.Redirect.INHERIT)
+            .start();
         cmd.waitFor();
         return new String(cmd.getInputStream().readAllBytes()).trim();
     }

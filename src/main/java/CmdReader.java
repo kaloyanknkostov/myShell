@@ -122,36 +122,15 @@ public class CmdReader {
             buffer.append(" ");
             cursorIndex++;
             System.out.print(" ");
-            System.out.flush();
-        }
-        if (buffer.toString().equals("exi")) {
+        } else if (buffer.toString().equals("exi")) {
             buffer.append("t");
             cursorIndex++;
             System.out.print("t");
             buffer.append(" ");
             cursorIndex++;
             System.out.print(" ");
-            System.out.flush();
-        }
-    }
-
-    private String runSttybak(String args)
-        throws IOException, InterruptedException {
-        String[] sttyArgs = args.split(" ");
-        String[] command = new String[sttyArgs.length + 1];
-        command[0] = "stty";
-        System.arraycopy(sttyArgs, 0, command, 1, sttyArgs.length);
-        Process cmd = new ProcessBuilder(command)
-            .redirectInput(new File("/dev/tty"))
-            .start();
-        int exitCode = cmd.waitFor();
-        if (exitCode != 0) {
-            String error = new String(
-                cmd.getErrorStream().readAllBytes()
-            ).trim();
-            throw new IOException("stty failed: " + error);
-        }
-        return new String(cmd.getInputStream().readAllBytes()).trim();
+        } else System.out.print("\u0007");
+        System.out.flush();
     }
 
     private String runStty(String args)

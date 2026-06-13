@@ -1,141 +1,206 @@
-## Part 1: What is  CommandContext ?
+  Shell
+    creates command registry
+    creates Completer
+    creates CmdReader
+    passes currentDir into readLine()
 
-   CommandContext  is a simple data container class. Its sole job
-  is to hold the input and output channels (streams) that a
-  command is allowed to use.
+  CmdReader
+    reads keys
+    owns buffer + cursor
+    calls Completer when Tab is pressed
+    applies completion result to buffer
+    handles Tab-Tab display
 
-  By wrapping these streams in a class, we decouple the command
-  (e.g.,  echo ) from the physical terminal or file system.
-  ──────
-  ### Part 2: The Fields Inside  CommandContext
+  Completer
+    receives CompletionRequest
+    asks providers for candidates
+    computes single match / common prefix / ambiguous result
 
-  Inside the class, you only need:
+  CompletionProvider
+    interface for different completion sources
 
-  1.  stdout  (PrintStream): The output stream where the command
-  sends normal output.
-  2.  stderr  (PrintStream): The output stream where the command
-  sends error messages.
-  3.  stdin  (InputStream): The input stream where the command
-  reads inputs (if needed).
-  4.  streamsToClose  (List of Closeables): A list of any streams
-  opened specifically for this command (like a file output stream)
-  that must be closed when the command finishes.
-  ──────
-  ### Part 3: Where and How it is Created
-
-  The Shell ( Main.java ) creates the context right before
-  executing a command.
-
-  The creation logic works like this:
-
-  1. The shell reads the user input (e.g.,  echo hello > out.txt ).
-  2. The shell parser splits this into:
-      • Command:  echo
-      • Arguments:  [hello]
-      • Redirection target:  out.txt  (via  > )
-  3. The shell instantiates a new  CommandContext :
-      • If there is NO redirection: The shell passes  System.out
-      and  System.err  directly into the context. No streams are
-      added to the cleanup list.
-      • If there IS redirection: The shell opens a
-      FileOutputStream  to  out.txt , wraps it in a  PrintStream ,
-      and puts it in the context as the  stdout . It also adds
-      this file stream to the context's cleanup list.
-
-  ──────
-  ### Part 4: How it is Used (The Lifecycle)
-
-  We use Java's  try-with-resources  to manage the context's
-  lifecycle:
-
-    // 1. Shell creates the context
-    try (CommandContext context = buildContext(parsedInput)) {
-
-        // 2. Shell runs the command
-        command.execute(args, context);
-
-    } // 3. The context is automatically closed here!
-
-  When  context.close()  runs, it loops through the
-  streamsToClose  list and safely closes them.
-  ──────
-  ### Part 5: Walkthrough - Standard Output ( echo hello )
-
-  Here is exactly what happens when you run a standard command:
-
-    [User Input: "echo hello"]
-          │
-          ▼
-    [Shell Parser] ──► Command: "echo", Args: ["hello"], Redirect:
-  None
-          │
-          ▼
-    [Context Creation] ──► stdout = System.out (Console)
-          │
-          ▼
-    [EchoCommand.execute(args, context)]
-          │
-          ▼
-       Calls: context.getStdout().println("hello")
-          │
-          ▼
-    [Console prints "hello"]
-          │
-          ▼
-    [Context Closes] ──► (No custom streams to close, does
-  nothing)
-  ──────
-  ### Part 6: Walkthrough - Redirection ( echo hello > out.txt )
-
-  Here is exactly what happens when you redirect output:
-
-    [User Input: "echo hello > out.txt"]
-          │
-          ▼
-    [Shell Parser] ──► Command: "echo", Args: ["hello"], Redirect:
-  "out.txt"
-          │
-          ▼
-    [Context Creation]
-      1. Opens FileOutputStream to "out.txt"
-      2. Wraps it in PrintStream
-      3. Sets stdout = this PrintStream
-      4. Adds FileOutputStream to closeable list
-          │
-          ▼
-    [EchoCommand.execute(args, context)]
-          │
-          ▼
-       Calls: context.getStdout().println("hello")
-          │
-          ▼
-    [File "out.txt" receives "hello"]
-          │
-          ▼
-    [Context Closes] ──► Closes the FileOutputStream, saving the
-  file to disk.
-
-  Notice that the  EchoCommand  code is identical in both
-  walkthroughs. It has no idea the stream changed; it just calls
-  println 
-  __________________________________________________________________________________
+  BuiltinCommandProvider
+    completes echo, exit, pwd, cd, type
   
-ublic static CommandContext buildContext(ParsedCommand parsed) {
-        if (parsed.hasRedirection()) {
-            // If > was found, create the file-redirected context
-            File file = new File(parsed.getRedirectFile());
-            return CommandContext.createWithRedirection(file);
-        } else {
-            // If no > was found, create the standard console context
-            return CommandContext.createDefault();
-        }
-    }
 
-  Then, in your main shell loop, you can use it in a single line with
-  try-with-resources :
+  ExecutableCommandProvider
+    completes executable names from PATH
 
-    try (CommandContext context = buildContext(parsedCommand)) {
-        // Look up the command (e.g., EchoCommand) and run it
-        Command command = registry.get(parsedCommand.getName());
-        command.execute(parsedCommand.getArguments(), context);
-    }
+  FileSystemProvider
+    later: completes files/directories for arguments
+
+  CompletionRequest
+    describes current editing state
+
+  CompletionResult
+    describes what CmdReader should do
+
+  The connection should be one-way:
+
+  Shell -> CmdReader -> Completer -> Providers
+
+  Avoid this direction:
+
+  Completer -> Shell
+  CmdReader -> CdCommand
+  CdCommand -> CmdReader
+
+  That would make the pieces too tangled.
+
+  A possible class layout:
+
+  Shell
+    fields:
+      currentDir
+      commandMap
+      builtinCommands
+      completer
+
+    methods:
+      runs()
+      buildContext(...)
+      createCompleter()
+
+  CmdReader
+    fields:
+      buffer
+      cursorIndex
+      completer
+      lastCompletionRequest maybe
+      previousKeyWasTab maybe
+
+    methods:
+      readLine(currentDir)
+      handleKey(...)
+      handleTab(currentDir)
+      applyCompletion(...)
+      showCompletionChoices(...)
+      redrawLine(...)
+
+  Completer
+    fields:
+      providers
+
+    methods:
+      complete(CompletionRequest request)
+      longestCommonPrefix(matches)
+
+  CompletionProvider
+    method:
+      candidates(CompletionRequest request)
+
+  Then providers:
+
+  BuiltinCommandProvider
+    fields:
+      builtinCommands
+
+    method:
+      candidates(request)
+
+  ExecutableCommandProvider
+    fields:
+      pathDirectories maybe
+
+    method:
+      candidates(request)
+
+  Later:
+
+  FilePathCompletionProvider
+    method:
+      candidates(request)
+
+  Your request object could contain:
+
+  CompletionRequest
+    buffer
+    cursorIndex
+    currentDirectory
+    currentWord
+    wordStartIndex
+    wordEndIndex
+    commandName maybe
+    positionType: COMMAND_NAME or ARGUMENT
+
+  The positionType is useful because this:
+
+  ec<Tab>
+
+  should complete command names, but this:
+
+  echo sr<Tab>
+
+  probably should complete file paths later.
+
+  The result object could contain:
+
+  CompletionResult
+    status:
+      NO_MATCH
+      SINGLE_MATCH
+      AMBIGUOUS
+      PARTIAL_COMMON_PREFIX
+
+    replacementStart
+    replacementEnd
+    replacementText
+    candidates
+    shouldAppendSpace
+
+  Important: don’t make the completer print anything. It should only return information. CmdReader prints, redraws, inserts, and shows options.
+
+  Example flow:
+
+  User types: py<Tab>
+
+  CmdReader:
+    builds CompletionRequest from buffer/cursor/currentDir
+
+  Completer:
+    asks BuiltinCommandProvider
+    asks ExecutableCommandProvider
+    gets candidates: python, python3, pyenv
+    computes longest common prefix: py
+    returns AMBIGUOUS with candidates
+
+  CmdReader:
+    first Tab: beep or do nothing
+    second Tab with same request: display candidates
+
+  For this:
+
+  User types: pyth<Tab>
+
+  Completer:
+    candidates: python, python3
+    common prefix: python
+    returns PARTIAL_COMMON_PREFIX replacementText = python
+
+  Then CmdReader updates the buffer, but does not append a space because there are still multiple candidates.
+
+  For this:
+
+  User types: ech<Tab>
+
+  Completer:
+    candidates: echo
+    returns SINGLE_MATCH replacementText = echo, shouldAppendSpace = true
+
+  Then CmdReader turns:
+
+  ech
+
+  into:
+
+  echo
+
+  The most important boundary is:
+
+  Completer decides what completion means.
+  CmdReader decides how completion appears in the terminal.
+  Providers decide where candidates come from.
+
+  Summary: use Shell as the wiring place, CmdReader as the terminal/input editor, Completer as the decision engine, and provider classes for builtins, executables, and later files/directories.
+
+  Next step: try sketching just the CompletionRequest and CompletionResult fields you think you need, without implementing providers yet. Send me that sketch and I’ll help you check whether the responsibilities are clean.

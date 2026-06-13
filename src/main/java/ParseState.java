@@ -8,10 +8,10 @@ public class ParseState {
         DOUBLE,
     }
 
-    ArrayList<String> tokens = new ArrayList<>();
-    StringBuilder sb = new StringBuilder();
-    Mode mode = Mode.NONE;
-    boolean escape = false;
+    private ArrayList<String> tokens = new ArrayList<>();
+    private StringBuilder sb = new StringBuilder();
+    private Mode mode = Mode.NONE;
+    private boolean escape = false;
 
     public static ArrayList<String> parseInput(String input) {
         ParseState state = new ParseState();

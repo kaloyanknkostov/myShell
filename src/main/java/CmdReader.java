@@ -1,3 +1,6 @@
+import completion.Completer;
+import completion.CompletionRequest;
+import completion.CompletionResult;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -6,11 +9,13 @@ import java.util.Set;
 public class CmdReader {
 
     private StringBuilder buffer = new StringBuilder();
-    private final Set<String> builtinCommands;
     private int cursorIndex = 0;
+    private Completer completer;
+    private String currentDir;
 
-    public CmdReader(Set<String> builtinCommands) {
-        this.builtinCommands = builtinCommands;
+    public CmdReader(Completer completer, String currentDir) {
+        this.completer = completer;
+        this.currentDir = currentDir;
     }
 
     public String readLine() {
@@ -115,6 +120,12 @@ public class CmdReader {
     }
 
     private void handleTab() {
+        var request = new CompletionRequest(
+            buffer.toString(),
+            cursorIndex,
+            currentDir
+        );
+
         if (buffer.toString().equals("ech")) {
             buffer.append("o");
             cursorIndex++;

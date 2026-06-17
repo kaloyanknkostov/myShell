@@ -120,28 +120,17 @@ public class CmdReader {
     }
 
     private void handleTab() {
-        var request = new CompletionRequest(
-            buffer.toString(),
-            cursorIndex,
-            currentDir
-        );
-
-        if (buffer.toString().equals("ech")) {
-            buffer.append("o");
-            cursorIndex++;
-            System.out.print("o");
-            buffer.append(" ");
-            cursorIndex++;
-            System.out.print(" ");
-        } else if (buffer.toString().equals("exi")) {
-            buffer.append("t");
-            cursorIndex++;
-            System.out.print("t");
-            buffer.append(" ");
-            cursorIndex++;
-            System.out.print(" ");
-        } else System.out.print("\u0007");
-        System.out.flush();
+        var list = completer
+            .complete(
+                new CompletionRequest(
+                    buffer.toString(),
+                    cursorIndex,
+                    currentDir
+                )
+            )
+            .getCandidates();
+        // TODO  Fix Result so cmd can complete from result add implemetation for the other comleterers and finish completer
+        if (!list.isEmpty()) System.out.println("FOUND " + list.getFirst());
     }
 
     private String runStty(String args)

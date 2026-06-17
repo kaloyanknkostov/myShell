@@ -33,7 +33,11 @@ public class Completer {
         this.providers = providers;
     }
 
-    public String complete(String buffer, String currentDir) {
-        return "";
+    public CompletionResult complete(CompletionRequest request) {
+        var candidates = new ArrayList<String>();
+        for (CompletionProvider provider : providers) {
+            candidates.addAll(provider.candidates(request));
+        }
+        return new CompletionResult(candidates);
     }
 }

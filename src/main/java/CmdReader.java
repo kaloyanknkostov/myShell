@@ -128,7 +128,7 @@ public class CmdReader {
                     currentDir
                 )
             )
-            .getCandidates();
+            .candidates();
         // TODO  Fix Result so cmd can complete from result add implemetation for the other comleterers and finish completer
         if (!list.isEmpty()) System.out.println("FOUND " + list.getFirst());
     }

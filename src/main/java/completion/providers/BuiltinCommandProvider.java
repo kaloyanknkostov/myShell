@@ -17,7 +17,7 @@ public class BuiltinCommandProvider implements CompletionProvider {
     public List<String> candidates(CompletionRequest request) {
         var output = new ArrayList<String>();
         for (String builtin : builtinCommands) {
-            if (builtin.startsWith(request.getCurrentToken())) {
+            if (builtin.startsWith(request.currentToken())) {
                 output.add(builtin);
             }
         }

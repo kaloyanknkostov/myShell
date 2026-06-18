@@ -2,28 +2,18 @@ package completion;
 
 import java.util.ArrayList;
 
-/*CompletionResult
-  status:
-    NO_MATCH
-    SINGLE_MATCH
-    AMBIGUOUS
-    PARTIAL_COMMON_PREFIX
-
-  replacementStart
-  replacementEnd
-  replacementText
-  candidates
-  shouldAppendSpace
-*/
-public class CompletionResult {
-
-    ArrayList<String> candidates;
-
-    public ArrayList<String> getCandidates() {
-        return candidates;
-    }
-
-    public CompletionResult(ArrayList<String> candidates) {
-        this.candidates = candidates;
+public record CompletionResult(
+    ArrayList<String> candidates,
+    int replacementStart,
+    int replacementEnd,
+    String replacementText,
+    boolean shouldAppendSpace,
+    Status status
+) {
+    public enum Status {
+        NO_MATCH,
+        SINGLE_MATCH,
+        PARTIAL_COMMON_PREFIX,
+        AMBIGUOUS,
     }
 }

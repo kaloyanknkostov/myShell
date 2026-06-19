@@ -41,12 +41,20 @@ public class Completer {
             shouldAppendSpace = false;
             status = CompletionResult.Status.NO_MATCH;
         } else if (candidates.size() == 1) {
-            replacementText = candidates.getFirst();
+            replacementText = candidates
+                .getFirst()
+                .substring(
+                    request.currentToken().length(),
+                    candidates.getFirst().length()
+                );
             status = CompletionResult.Status.SINGLE_MATCH;
         } else {
             String commonPrefix = findCommonPrefix(candidates);
             if (commonPrefix.length() > request.currentToken().length()) {
-                replacementText = commonPrefix;
+                replacementText = commonPrefix.substring(
+                    request.currentToken().length(),
+                    commonPrefix.length()
+                );
                 shouldAppendSpace = false;
                 status = CompletionResult.Status.PARTIAL_COMMON_PREFIX;
             } else {
@@ -55,7 +63,6 @@ public class Completer {
                 status = CompletionResult.Status.AMBIGUOUS;
             }
         }
-
         return new CompletionResult(
             candidates,
             replacementText,

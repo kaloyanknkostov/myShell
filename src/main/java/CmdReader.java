@@ -1,16 +1,14 @@
 import completion.Completer;
 import completion.CompletionRequest;
-import completion.CompletionResult;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Set;
 
 public class CmdReader {
 
     private StringBuilder buffer = new StringBuilder();
     private int cursorIndex = 0;
     private Completer completer;
+
     private String currentDir;
 
     public CmdReader(Completer completer, String currentDir) {
@@ -120,19 +118,42 @@ public class CmdReader {
     }
 
     private void handleTab() {
-        var list = completer
-            .complete(
-                new CompletionRequest(
-                    buffer.toString(),
-                    cursorIndex,
-                    currentDir
-                )
-            )
-            .candidates();
+        var result = completer.complete(
+            new CompletionRequest(buffer.toString(), cursorIndex, currentDir)
+        );
         // TODO completer returns everything correct(have to test) handle tab should learn how to use Completion result and how to move and print and such also finish FileSystemProvider
         // and execution provider
-        if (!list.isEmpty()) System.out.println("FOUND " + list.getFirst());
+
+        switch (result.status()) {
+            case SINGLE_MATCH, PARTIAL_COMMON_PREFIX -> append(
+                result.replacementText(),
+                result.shouldAppendSpace()
+            );
+            case NO_MATCH -> {
+                System.out.print('\u0007');
+                System.out.flush();
+            }
+            case AMBIGUOUS -> placeholder();
+        }
     }
+
+    private void append(String add, boolean appendSpace) {
+        String remainder = buffer.substring(cursorIndex);
+        buffer.insert(cursorIndex, add);
+        cursorIndex += add.length();
+
+        if (appendSpace) {
+            buffer.insert(cursorIndex, " ");
+            cursorIndex++;
+            System.out.print("\033[K" + add + " " + remainder);
+        } else {
+            System.out.print("\033[K" + add + remainder);
+        }
+        System.out.print("\b".repeat(remainder.length()));
+        System.out.flush();
+    }
+
+    private void placeholder() {}
 
     private String runStty(String args)
         throws IOException, InterruptedException {

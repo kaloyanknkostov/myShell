@@ -18,4 +18,19 @@ public record CompletionRequest(
         }
         return buffer.substring(start, cursorIndex);
     }
+
+    public boolean isCommand() {
+        if (cursorIndex == 0) {
+            return true;
+        }
+        int start = cursorIndex - 1;
+        for (int i = start; i >= 0; i--) {
+            if (buffer.charAt(i) == ' ') {
+                break;
+            }
+            start = i;
+        }
+        if (start == 0) return true;
+        return false;
+    }
 }

@@ -4,8 +4,6 @@ import java.util.ArrayList;
 
 public record CompletionResult(
     ArrayList<String> candidates,
-    int replacementStart,
-    int replacementEnd,
     String replacementText,
     boolean shouldAppendSpace,
     Status status

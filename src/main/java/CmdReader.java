@@ -129,7 +129,8 @@ public class CmdReader {
                 )
             )
             .candidates();
-        // TODO  Fix Result so cmd can complete from result add implemetation for the other comleterers and finish completer
+        // TODO completer returns everything correct(have to test) handle tab should learn how to use Completion result and how to move and print and such also finish FileSystemProvider
+        // and execution provider
         if (!list.isEmpty()) System.out.println("FOUND " + list.getFirst());
     }
 

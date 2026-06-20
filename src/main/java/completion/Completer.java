@@ -5,6 +5,7 @@ import completion.providers.CompletionProvider;
 import completion.providers.ExecutableCommandProvider;
 import completion.providers.FileSystemProvider;
 import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.function.Predicate;
 
@@ -55,6 +56,7 @@ public class Completer {
                     request.currentToken().length(),
                     commonPrefix.length()
                 );
+
                 shouldAppendSpace = false;
                 status = CompletionResult.Status.PARTIAL_COMMON_PREFIX;
             } else {
@@ -90,7 +92,7 @@ public class Completer {
         CompletionRequest request,
         Predicate<CompletionProvider> allowed
     ) {
-        var candidates = new ArrayList<String>();
+        var candidates = new LinkedHashSet<String>();
         providers
             .stream()
             .filter(allowed)
@@ -98,6 +100,6 @@ public class Completer {
             .forEach(providerCandidates ->
                 candidates.addAll(providerCandidates)
             );
-        return candidates;
+        return new ArrayList<>(candidates);
     }
 }

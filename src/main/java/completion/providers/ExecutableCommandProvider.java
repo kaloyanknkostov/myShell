@@ -17,10 +17,8 @@ public class ExecutableCommandProvider implements CompletionProvider {
 
     @Override
     public List<String> candidates(CompletionRequest request) {
-        String[] path_command = System.getenv("PATH").split(":");
-        var out = new LinkedHashSet<String>();
-        var paths = Arrays.asList(path_command);
-        for (String path : paths) {
+        var output = new LinkedHashSet<String>();
+        for (String path : Arrays.asList(System.getenv("PATH").split(":"))) {
             try (Stream<Path> stream = Files.list(Paths.get(path))) {
                 stream
                     .filter(file -> !Files.isDirectory(file))
@@ -28,9 +26,9 @@ public class ExecutableCommandProvider implements CompletionProvider {
                     .map(Path::getFileName)
                     .map(Path::toString)
                     .filter(name -> name.startsWith(request.currentToken()))
-                    .forEach(out::add);
+                    .forEach(output::add);
             } catch (IOException e) {}
         }
-        return new ArrayList<>(out);
+        return new ArrayList<>(output);
     }
 }

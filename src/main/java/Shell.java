@@ -2,6 +2,7 @@ import commands.*;
 import completion.Completer;
 import completion.providers.BuiltinCommandProvider;
 import completion.providers.CompletionProvider;
+import completion.providers.ExecutableCommandProvider;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -83,10 +84,9 @@ public class Shell {
 
     private CmdReader setupCmdReader() {
         var list = new ArrayList<CompletionProvider>();
-        var builtinProvider = new BuiltinCommandProvider(builtinCommands);
-        list.add(builtinProvider);
-        var completer = new Completer(list);
-        return new CmdReader(completer, currentDir);
+        list.add(new BuiltinCommandProvider(builtinCommands));
+        list.add(new ExecutableCommandProvider());
+        return new CmdReader(new Completer(list), currentDir);
     }
 
     private void setupCommands() {

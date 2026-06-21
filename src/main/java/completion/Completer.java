@@ -35,7 +35,7 @@ public class Completer {
                 request,
                 item -> item instanceof FileSystemProvider
             );
-            shouldAppendSpace = false;
+            shouldAppendSpace = true;
         }
         if (candidates.isEmpty()) {
             replacementText = "";

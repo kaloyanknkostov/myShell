@@ -149,9 +149,7 @@ public class CmdReader {
             list.stream()
                 .sorted()
                 .forEach(candidate -> System.out.print(candidate + "  "));
-            System.out.print("\r\n\r");
-            System.out.print("$ ");
-            System.out.print(buffer);
+            System.out.print("\r\n\r$ " + buffer);
             System.out.flush();
         }
     }

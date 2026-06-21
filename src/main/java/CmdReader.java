@@ -2,12 +2,14 @@ import completion.Completer;
 import completion.CompletionRequest;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 
 public class CmdReader {
 
     private StringBuilder buffer = new StringBuilder();
     private int cursorIndex = 0;
     private Completer completer;
+    private boolean pressedTabOnes = false;
 
     private String currentDir;
 
@@ -122,10 +124,9 @@ public class CmdReader {
             new CompletionRequest(buffer.toString(), cursorIndex, currentDir)
         );
         // TODO completer returns everything correct(have to test) handle tab should learn how to use Completion result and how to move and print and such also finish FileSystemProvider
-        // and execution provider
 
         switch (result.status()) {
-            case SINGLE_MATCH, PARTIAL_COMMON_PREFIX -> append(
+            case SINGLE_MATCH, PARTIAL_COMMON_PREFIX -> handleCompletion(
                 result.replacementText(),
                 result.shouldAppendSpace()
             );
@@ -133,11 +134,29 @@ public class CmdReader {
                 System.out.print('\u0007');
                 System.out.flush();
             }
-            case AMBIGUOUS -> placeholder();
+            case AMBIGUOUS -> handleAmbiguous(result.candidates());
         }
     }
 
-    private void append(String add, boolean appendSpace) {
+    private void handleAmbiguous(ArrayList<String> list) {
+        if (!pressedTabOnes) {
+            System.out.print('\u0007');
+            System.out.flush();
+            pressedTabOnes = true;
+        } else {
+            pressedTabOnes = false;
+            System.out.print("\r\n\r");
+            list.stream()
+                .sorted()
+                .forEach(candidate -> System.out.print(candidate + "  "));
+            System.out.print("\r\n\r");
+            System.out.print("$ ");
+            System.out.print(buffer);
+            System.out.flush();
+        }
+    }
+
+    private void handleCompletion(String add, boolean appendSpace) {
         String remainder = buffer.substring(cursorIndex);
         buffer.insert(cursorIndex, add);
         cursorIndex += add.length();
@@ -152,8 +171,6 @@ public class CmdReader {
         System.out.print("\b".repeat(remainder.length()));
         System.out.flush();
     }
-
-    private void placeholder() {}
 
     private String runStty(String args)
         throws IOException, InterruptedException {
